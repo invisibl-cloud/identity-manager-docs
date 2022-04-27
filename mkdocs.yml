@@ -1,10 +1,38 @@
-site_name: Identity Manager
+site_name: Identity Manager Operator
+repo_url: https://github.com/invisibl-cloud/identity-manager
+repo_name: Identity Manager Operator
+remote_branch: gh-pages
+plugins:
+  - search:
+      lang: en
 theme:
   name: material
   palette:
-    primary: deep orange
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: purple
+      toggle:
+        icon: material/toggle-switch-off-outline 
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate 
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
   features:
+    - navigation.instant
     - navigation.tracking
     - navigation.indexes
-    - navigation.expand
-copyright: Copyright &copy; 2020 - 2022 Invisibl Cloud LLC
+    - navigation.tabs
+    - navigation.tabs.sticky
+nav:
+  - Introduction: index.md
+  - Overview: api-overview.md
+  - API Types:
+      WorkloadIdentity: api-workloadidentity.md
+  - Guides:
+      - Introduction: guides-introduction.md
+      - Getting started: guides-getting-started.md
+  - Contributing:
+    - Code of Conduct: contributing-coc.md
