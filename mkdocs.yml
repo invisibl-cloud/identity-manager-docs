@@ -1,0 +1,10 @@
+site_name: Identity Manager
+theme:
+  name: material
+  palette:
+    primary: deep orange
+  features:
+    - navigation.tracking
+    - navigation.indexes
+    - navigation.expand
+copyright: Copyright &copy; 2020 - 2022 Invisibl Cloud LLC
