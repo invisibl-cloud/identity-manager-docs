@@ -2,9 +2,6 @@ site_name: Identity Manager Operator
 repo_url: https://github.com/invisibl-cloud/identity-manager
 repo_name: Identity Manager Operator
 remote_branch: gh-pages
-plugins:
-  - search:
-      lang: en
 theme:
   name: material
   palette:
@@ -26,12 +23,14 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.indexes
+plugins:
+  - search:
+      lang: en
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
   - admonition
-  - pymdownx.snippets:
-      base_path: docs
+  - pymdownx.snippets
 nav:
   - Introduction: index.md
   - Overview: api-overview.md

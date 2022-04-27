@@ -27,22 +27,7 @@ kubectl create secret generic aws-credentials --from-file=./access-key  --from-f
 ### Create your first WorkloadIdentity
 
 ``` yaml
-{% include 'basic-workload-identity.yaml' %}
-```
-
-``` bash
-kubectl describe workloadidentity demoapp-v1
-# [...]
-Name:  example
-Status:
-  Conditions:
-    Last Transition Time:  2021-02-24T16:45:23Z
-    Message:               Secret was synced
-    Reason:                SecretSynced
-    Status:                True
-    Type:                  Ready
-  Refresh Time:            2021-02-24T16:45:24Z
-Events:                    <none>
+--8<-- "examples/basic-workload-identity.yaml"
 ```
 
 For more advanced examples, please read the other
