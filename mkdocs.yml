@@ -16,7 +16,9 @@ theme:
         icon: material/toggle-switch-off-outline 
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
-      scheme: slate 
+      scheme: slate
+      primary: grey
+      accent: white
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
@@ -24,8 +26,12 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.indexes
-    - navigation.tabs
-    - navigation.tabs.sticky
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.snippets:
+      base_path: docs
 nav:
   - Introduction: index.md
   - Overview: api-overview.md
