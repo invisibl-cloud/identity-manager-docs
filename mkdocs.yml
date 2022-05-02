@@ -35,9 +35,11 @@ nav:
   - Introduction: index.md
   - Overview: api-overview.md
   - API Types:
-      WorkloadIdentity: api-workloadidentity.md
+      - WorkloadIdentity: api-workloadidentity.md
   - Guides:
       - Introduction: guides-introduction.md
       - Getting started: guides-getting-started.md
+      - Developer Guide: developer-guide.md
   - Contributing:
     - Code of Conduct: contributing-coc.md
+    - Contributing Process: contributing-process.md
