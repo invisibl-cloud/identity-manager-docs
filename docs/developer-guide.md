@@ -68,6 +68,27 @@ make install
 make run
 ```
 
+## Deploy WorkloadIdenity
+
+### Create a secret containing your AWS credentials
+
+```shell
+echo -n 'KEYID' > ./access-key
+echo -n 'SECRETKEY' > ./secret-access-key
+echo -n 'REGION' > ./region
+kubectl create secret generic aws-credentials --from-file=./access-key  --from-file=./secret-access-key --from-file=./region
+```
+
+### Apply Workload Identity
+
+Save the following workload identity yaml in `workload-identity.yaml`.
+
+``` yaml
+--8<-- "examples/basic-workload-identity.yaml"
+```
+
+Once the workload identity is applied, an IAM role will be created in AWS with the policies attached to the role.
+
 To remove the CRDs run:
 
 ```shell
