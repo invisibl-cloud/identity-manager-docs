@@ -121,6 +121,8 @@ helm repo add invisibl https://charts.invisibl.io
 helm install invisibl/identity-manager  --set provider.aws.enabled=true --set provider.aws.arn=$IAM_ROLE --set serviceAccount.create=false --set serviceAccount.name=identity-manager --namespace=identity-manager --generate-name
 ```
 
+The above command will install Identity Manager in `identity-manager` namespace and `identity-manager` service account. This service account is annotated to the IAM role that has the necessary IAM permissions for the Identity Manager. This service account is dedicated to Identity Manager and any workload identity should be deployed in another service accounts.
+
 ## Deploying demo application
 
 1. Get your AWS account ID
