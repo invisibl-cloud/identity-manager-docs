@@ -121,7 +121,7 @@ helm repo add invisibl https://charts.invisibl.io
 helm install invisibl/identity-manager  --set provider.aws.enabled=true --set provider.aws.arn=$IAM_ROLE --set serviceAccount.create=false --set serviceAccount.name=identity-manager --namespace=identity-manager --generate-name
 ```
 
-## Create your first WorkloadIdentity
+## Deploying demo application
 
 1. Get your AWS account ID
 ```bash
@@ -133,44 +133,23 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 OIDC_PROVIDER=$(aws eks describe-cluster --name identity-manager-test --query "cluster.identity.oidc.issuer" --region us-east-1 --output text | sed -e "s/^https:\/\///")
 ```
 
-3. Create a demo namespace for workload identity deployment
-```bash
-kubectl create namespace demo
-```
-
-4. Save the following workload identity yaml in `demo-workload-identity.yaml`. Replace the `ACCOUNT_ID` and `OIDC_PROVIDER` in the yaml with the values obtained in the previous steps.
-``` yaml
---8<-- "examples/demo-identity-workload-placeholder.yaml"
-```
-
-5. Apply the workload identity.
+3. Deploy demo application
+// TODO: Publish the demo app helm chart
 ``` bash
-kubectl apply -f demo-workload-identity.yaml
+helm install invisible/idm-test-tool --set serviceAccount.name=sa-demo --namespace=demo --set account.id=${ACCOUNT_ID} --set oidc.provider=${OIDC_PROVIDER} --create-namespace --generate-name
 ```
+The above command will deploy the workload identity and a demo application in the namespace `demo`. The identity manager will create an IAM role `demo-identity` in AWS with the inline polices mentioned in the workload identity attached to the IAM role. The identity manager will also create a service account `sa-demo` and will annotate it with the newly created role to facilitate the role binding.
 
-The above workload identity is deployed in the namespace `demo`. The identity manager will create an IAM role `demo-identity` in AWS with the inline polices mentioned in the workload identity attached to the IAM role. The identity manager will also create a service account `sa-demo` and will annotate it with the newly created role to facilitate the role binding.
-6. Verify the role binding for service account
+4. Verify the role binding for service account
 ``` bash
 kubectl get serviceaccount sa-demo -n demo  -o=jsonpath='{.metadata.annotations}'
 ```
-
 The response should look similar to the below one:
 ``` bash
 {"eks.amazonaws.com/role-arn":"arn:aws:iam::<Account ID>:role/demo-identity"}
 ```
-
-Now the service account is ready to provide the necessary permissions for the deployments.
-
-## Deploy a demo application
-
-// TODO: Publish the demo app helm chart
-``` bash
-helm install invisible/idm-test-tool --set serviceAccount.name=sa-demo --namespace=demo --generate-name
-```
-
-Check the logs of the demo application pod and it should list your EC2 instances using the new role 
+5. Check the logs of the demo application pod and it should list your EC2 instances using the new role 
 `demo-identity`.
-
 ``` bash
 time="2022-05-04T09:54:04Z" level=info msg="STS:"
 time="2022-05-04T09:54:04Z" level=info msg="STS ARN: arn:aws:sts::<Account ID>:assumed-role/demo-identity/48520678504627062014"
