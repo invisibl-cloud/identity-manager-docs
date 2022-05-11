@@ -4,8 +4,6 @@ This guide helps you to setup the cluster, install Identity Manager, deploy a wo
 
 > Note: If you already have a cluster setup ready, you can refer to the [Getting started](guides-getting-started.md) guide.
 
-> Note: The minimum supported version of Kubernetes is `1.16.0`.
-
 ## Pre-requisites
 
 The following tools are needed to be installed in your system:

@@ -187,3 +187,30 @@ Uninstall the helm release using the delete command.
 ```bash
 helm delete identity-manager --namespace identity-manager
 ```
+
+## Troubleshooting
+
+1. Identity Manager maintains the most recent log message in the `Status` field of the workload identity. In rare cases where the pods are failing to aunthenticate to the AWS services, the workload identity's `Status` fields can be queried to view the log which helps in debugging.
+```bash
+kubectl get workloadidentity demo-identity -o yaml
+```
+2. If there are no error log message found in the `Status` field of the workload identity, it is worth checking if the namespace and the service account defined in the workload identity matches the trust policy in the `aws.assumeRolePolicy`. The following is an simple example template of the trust policy:
+``` json
+{
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Federated": "arn:aws:iam::454135189203:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/33FC4D52E1241A120425308D0853F923A"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+              "StringEquals": {
+                "oidc.eks.us-east-1.amazonaws.com/id/33FC4D52E1241A120425308D0853F923A:sub": "system:serviceaccount:<namespace>:<service account>"
+              }
+            }
+          }
+        ]
+      }
+```
