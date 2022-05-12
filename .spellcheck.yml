@@ -10,10 +10,9 @@ matrix:
   pipeline:
   - pyspelling.filters.markdown:
       markdown_extensions:
-      - pymdownx.superfences:
+      - markdown.extensions.extra:
   - pyspelling.filters.html:
       comments: false
-      # Ignore code
       ignores:
         - code
         - a

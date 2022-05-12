@@ -1,7 +1,7 @@
 # identity-manager-docs
 
 Documentation for Identity Manager Operator.
-Hosted at: https://invisibl-cloud.github.io/identity-manager-docs/
+Hosted at: [Identity Manager Docs](https://invisibl-cloud.github.io/identity-manager-docs/)
 
 ### Spellcheck
 
