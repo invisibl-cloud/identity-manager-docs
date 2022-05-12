@@ -34,6 +34,7 @@ markdown_extensions:
 nav:
   - Introduction: index.md
   - Overview: api-overview.md
+  - Quick start: guides-quick-start.md
   - API Types:
       - WorkloadIdentity: api-workloadidentity.md
   - Guides:

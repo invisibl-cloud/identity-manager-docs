@@ -1,43 +1,216 @@
 # Getting started
 
-identity-manager operator runs in kubernetes cluster and manages WorkloadIdentity resources.
+This guide helps you to setup the cluster, install Identity Manager, deploy a workload identity and verify the working with a demo application. The following installation steps are applicable for AWS EKS cluster.
 
 > Note: The minimum supported version of Kubernetes is `1.16.0`.
 
-## Installing with Helm
+## Pre-requisites
 
+The following tools are needed to be installed in your system:
+
+1. `Helm` - To install the Identity Manager
+2. `kubectl` - To connect with kubernetes cluster
+
+## Working with an existing cluster
+For an existing cluster, a new namespace, a service account and an IAM role need to be created. A few policies that the Identity Manager needs for its working need to be attached to the newly created role.
+
+1. Create the namespace and service account
+```bash
+kubectl create namespace identity-manager
+kubectl create serviceaccount identity-manager -n identity-manager
+```
+
+2. export a few required values:
+```bash
+export ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+
+export OIDC_PROVIDER=$(aws eks describe-cluster --name identity-manager-test --query "cluster.identity.oidc.issuer" --region us-east-1 --output text | sed -e "s/^https:\/\///")
+
+export NAMESPACE=identity-manager
+export SERVICEACCNAME=identity-manager
+export ROLENAME=identity-manager
+```
+
+3. Save the required IAM polices:
+```bash
+read -r -d '' IDENTITY_POLICIES <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "iam:AttachRolePolicy",
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:DeleteRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:GetRole",
+                "iam:ListAttachedRolePolicies",
+                "iam:ListRolePolicies",
+                "iam:PutRolePolicy",
+                "iam:UpdateAssumeRolePolicy",
+                "iam:UpdateRole",
+                "sts:GetCallerIdentity"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+EOF
+echo "${IDENTITY_POLICIES}" > identity-policies.json
+```
+
+4. Save the trust relationship
+```bash
+read -r -d '' TRUST_RELATIONSHIP <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::${ACCOUNT_ID}:oidc-provider/${OIDC_PROVIDER}"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "${OIDC_PROVIDER}:aud": "sts.amazonaws.com",
+          "${OIDC_PROVIDER}:sub": "system:serviceaccount:${NAMESPACE}:${SERVICEACCNAME}"
+        }
+      }
+    }
+  ]
+}
+EOF
+echo "${TRUST_RELATIONSHIP}" > trust.json
+```
+
+5. Create the IAM role:
+```bash
+aws iam create-role --role-name ${ROLENAME} --assume-role-policy-document file://trust.json --description "identity-role"
+```
+Note down the IAM role ARN in the response.
+
+6. Attach the IAM policies to the role:
+```bash
+aws iam put-role-policy --role-name <ROLENAME> --policy-name identity-policy --policy-document file://identity-policies.json
+```
+
+7. Annotate the service account with the IAM role ARN that was noted in the step 5.
+```bash
+kubectl annotate serviceaccount -n identity-manage identity-manage \
+eks.amazonaws.com/role-arn=<ROLE ARN>
+```
+
+Now the service account `identity-manager` is ready for the Identity Manager installation.
+
+## Installing Identity Manager with Helm
+
+
+1. Copy the cluster's IAM role:
+ Copy the newly created IAM role's ARN.
+``` bash
+export IAM_ROLE=<IAM role>
+```
+// TODO: installing on sa created by eksctl will have managed-by label as "eksctl" instead of "helm" and this `helm uninstall` not work and the deployment has to be manually deleted.
+2. Install Idenity Manager
 ``` bash
 helm repo add invisibl https://charts.invisibl.io
 
-helm install identity-manager \
-   invisibl/identity-manager \
-    -n identity-manager \
-    --create-namespace
+helm install invisibl/identity-manager  --set provider.aws.enabled=true --set provider.aws.arn=$IAM_ROLE --set serviceAccount.create=false --set serviceAccount.name=identity-manager --namespace=identity-manager --generate-name
 ```
 
+The above command will install Identity Manager in `identity-manager` namespace and `identity-manager` service account. This service account is annotated to the IAM role that has the necessary IAM permissions for the Identity Manager. This service account is dedicated to Identity Manager and any workload identity should be deployed in another service accounts.
 
-### Create a secret containing your AWS credentials
+## Deploying demo application
 
-```shell
-echo -n 'KEYID' > ./access-key
-echo -n 'SECRETKEY' > ./secret-access-key
-kubectl create secret generic aws-credentials --from-file=./access-key  --from-file=./secret-access-key
+1. Get your AWS account ID
+```bash
+ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 ```
 
-### Create your first WorkloadIdentity
-
-``` yaml
---8<-- "examples/basic-workload-identity.yaml"
+2. Get your OIDC provider
+```bash
+OIDC_PROVIDER=$(aws eks describe-cluster --name identity-manager-test --query "cluster.identity.oidc.issuer" --region us-east-1 --output text | sed -e "s/^https:\/\///")
 ```
 
-For more advanced examples, please read the other
-[guides](guides-introduction.md).
+3. Deploy demo application
+// TODO: Publish the demo app helm chart
+``` bash
+helm install invisible/idm-test-tool --set serviceAccount.name=sa-demo --namespace=demo --set account.id=${ACCOUNT_ID} --set oidc.provider=${OIDC_PROVIDER} --create-namespace --generate-name
+```
+The above command will deploy the workload identity and a demo application in the namespace `demo`. The identity manager will create an IAM role `demo-identity` in AWS with the inline polices mentioned in the workload identity attached to the IAM role. The identity manager will also create a service account `sa-demo` and will annotate it with the newly created role to facilitate the role binding.
 
+4. Verify the role binding for service account
+``` bash
+kubectl get serviceaccount sa-demo -n demo  -o=jsonpath='{.metadata.annotations}'
+```
+The response should look similar to the below one:
+``` bash
+{"eks.amazonaws.com/role-arn":"arn:aws:iam::<Account ID>:role/demo-identity"}
+```
+5. Check the logs of the demo application pod and it should list your EC2 instances using the new role 
+`demo-identity`.
+``` bash
+time="2022-05-04T09:54:04Z" level=info msg="STS:"
+time="2022-05-04T09:54:04Z" level=info msg="STS ARN: arn:aws:sts::<Account ID>:assumed-role/demo-identity/48520678504627062014"
+time="2022-05-04T09:54:04Z" level=info msg="EC2:"
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0532a81dd8ed78de1"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-078e85384f15b27b9"
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0ec5be0a1e1017088"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-0efee718f18c10742"
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0992e8b92ae857ddd"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-097b6eb735190898c"
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0f7c4e3a8d62c0af7"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-09e2a542b827858de"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-0c77422d4e56c42c9"
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0265da1370d12b44d"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-05d02af34a271e308"   
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0efa1b0178917b544"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-04027edd12c82f6d6"
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0b0d08c57fb60bb71"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-09d4114c468def93e"
+time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-09e8cc98f64abef83"
+time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-0bc14ad13ef223d76"
+time="2022-05-04T09:54:04Z" level=info
+time="2022-05-04T09:54:04Z" level=info msg="Reservations count: 8"
+time="2022-05-04T09:54:04Z" level=info msg="Instances count: 9"
+
+```
 
 ### Uninstalling with Helm
 
+// TODO: Resolve helm vs eks conflict in sa annotation
 Uninstall the helm release using the delete command.
 
 ```bash
 helm delete identity-manager --namespace identity-manager
+```
+
+## Troubleshooting
+
+1. Identity Manager maintains the most recent log message in the `Status` field of the workload identity. In rare cases where the pods are failing to aunthenticate to the AWS services, the workload identity's `Status` fields can be queried to view the log which helps in debugging.
+```bash
+kubectl get workloadidentity demo-identity -o yaml
+```
+2. If there are no error log message found in the `Status` field of the workload identity, it is worth checking if the namespace and the service account defined in the workload identity matches the trust policy in the `aws.assumeRolePolicy`. The following is an simple example template of the trust policy:
+``` json
+{
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Federated": "arn:aws:iam::454135189203:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/33FC4D52E1241A120425308D0853F923A"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+              "StringEquals": {
+                "oidc.eks.us-east-1.amazonaws.com/id/33FC4D52E1241A120425308D0853F923A:sub": "system:serviceaccount:<namespace>:<service account>"
+              }
+            }
+          }
+        ]
+      }
 ```
