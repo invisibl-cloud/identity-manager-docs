@@ -43,7 +43,6 @@ helm install invisibl/identity-manager  --set provider.aws.enabled=true --set pr
 
 The above command will install Identity Manager in `identity-manager` namespace and `identity-manager` service account. This service account is annotated to the IAM role that has the necessary IAM permissions for the Identity Manager. This service account is dedicated to Identity Manager and any workload identity should be deployed in another service accounts.
 
-// TODO: installing on sa created by eksctl will have managed-by label as "eksctl" instead of "helm" and this makes `helm uninstall` not work and the deployment has to be manually deleted.
 
 ## Deploying demo application
 
@@ -103,9 +102,11 @@ time="2022-05-04T09:54:04Z" level=info msg="Instances count: 9"
 
 ### Uninstalling with Helm
 
-// TODO: Resolve helm vs eks conflict in sa annotation
-Uninstall the helm release using the delete command.
-
+1. Get the name of the Identity Manager's release name with the help of `helm list`
 ```bash
-helm delete identity-manager --namespace identity-manager
+helm list -n identity-manager
+```
+2. Uninstall Identity Manager
+```bash
+helm uninstall <identity-manager-release-name> -n identity-manager
 ```

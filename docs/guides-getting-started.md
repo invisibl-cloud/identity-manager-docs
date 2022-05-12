@@ -181,11 +181,13 @@ time="2022-05-04T09:54:04Z" level=info msg="Instances count: 9"
 
 ### Uninstalling with Helm
 
-// TODO: Resolve helm vs eks conflict in sa annotation
-Uninstall the helm release using the delete command.
-
+1. Get the name of the Identity Manager's release name with the help of `helm list`
 ```bash
-helm delete identity-manager --namespace identity-manager
+helm list -n identity-manager
+```
+2. Uninstall Identity Manager
+```bash
+helm uninstall <identity-manager-release-name> -n identity-manager
 ```
 
 ## Troubleshooting
