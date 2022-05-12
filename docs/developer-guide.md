@@ -68,7 +68,7 @@ make install
 make run
 ```
 
-## Deploy WorkloadIdenity
+## Deploy WorkloadIdentity
 
 ### Create a secret containing your AWS credentials
 

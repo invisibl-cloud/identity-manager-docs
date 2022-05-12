@@ -21,14 +21,14 @@ With IRSA, the pods are made the first class citizens in IAM. Instead of interce
 For more information, refer [AWS IRSA](https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/)
 
 ## Behavior
-This section defines the behaviour of the Identity Manager in AWS EKS cluster for the following sample workload identity.
+This section defines the behavior of the Identity Manager in AWS EKS cluster for the following sample workload identity.
 ``` yaml
 --8<-- "examples/demo-workload-identity.yaml"
 ```
 On applying the above workload identity, Identity Manager Operator reconciles the workload identity in the following manner:
 
 1. The Identity Manager identifies the cloud provider using `spec.provider`. This also tells the Identity Manager to read the AWS specific spec at `spec.aws`.
-2. The Identity Manager uses specified credentials in `spec.credentials` to instanciate the cloud provider's API client if the cluster is a non EKS cluster.
+2. The Identity Manager uses specified credentials in `spec.credentials` to instantiate the cloud provider's API client if the cluster is a non EKS cluster.
 3. The Identity Manager creates an IAM role with the name `demo-identity`, in the path mentioned in `spec.aws.path` attaches the policies defined in `spec.aws.inlinePolicies`, applies the trust policy specified in `spec.aws.assumeRolePolicy` to the IAM role. The created IAM role will have the session duration mentioned in `spec.aws.maxSessionDuration`. It is the user's responsibility to populate the OIDC provider, namespace and the service account to which the IAM role will be annotated in `spec.aws.assumeRolePolicy`.
 4. The Identity Manager creates or updates the service account depending on the service account action specified in the `spec.aws.serviceAccounts.action`. The service account creates a new annotation with the newly created IAM role in the service account if the `spec.aws.serviceAccounts.action` is `Create`. If `spec.aws.serviceAccounts.action` is `Update`, the Identity Manager will update the service account's annotation if necessary. The following shows the example annotation of a service account:
 ```

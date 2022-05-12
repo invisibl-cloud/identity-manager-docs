@@ -4,7 +4,7 @@ This guide helps you to setup the cluster, install Identity Manager, deploy a wo
 
 > Note: If you already have a cluster setup ready, you can refer to the [Getting started](guides-getting-started.md) guide.
 
-## Pre-requisites
+## Prerequisites
 
 The following tools are needed to be installed in your system:
 
@@ -34,7 +34,7 @@ If the cluster is newly created using `eksctl`, copy the IAM role ARN of the clu
 ``` bash
 export IAM_ROLE=<IAM role>
 ```
-2. Install Idenity Manager
+2. Install Identity Manager
 ``` bash
 helm repo add invisibl https://charts.invisibl.io
 
@@ -97,7 +97,6 @@ time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-0bc14ad13ef223d76"
 time="2022-05-04T09:54:04Z" level=info
 time="2022-05-04T09:54:04Z" level=info msg="Reservations count: 8"
 time="2022-05-04T09:54:04Z" level=info msg="Instances count: 9"
-
 ```
 
 ### Uninstalling with Helm

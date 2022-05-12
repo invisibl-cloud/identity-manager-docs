@@ -4,7 +4,7 @@ This guide helps you to setup the cluster, install Identity Manager, deploy a wo
 
 > Note: The minimum supported version of Kubernetes is `1.16.0`.
 
-## Pre-requisites
+## Prerequisites
 
 The following tools are needed to be installed in your system:
 
@@ -114,7 +114,7 @@ Now the service account `identity-manager` is ready for the Identity Manager ins
 export IAM_ROLE=<IAM role>
 ```
 // TODO: installing on sa created by eksctl will have managed-by label as "eksctl" instead of "helm" and this `helm uninstall` not work and the deployment has to be manually deleted.
-2. Install Idenity Manager
+2. Install Identity Manager
 ``` bash
 helm repo add invisibl https://charts.invisibl.io
 
@@ -192,7 +192,7 @@ helm uninstall <identity-manager-release-name> -n identity-manager
 
 ## Troubleshooting
 
-1. Identity Manager maintains the most recent log message in the `Status` field of the workload identity. In rare cases where the pods are failing to aunthenticate to the AWS services, the workload identity's `Status` fields can be queried to view the log which helps in debugging.
+1. Identity Manager maintains the most recent log message in the `Status` field of the workload identity. In rare cases where the pods are failing to authenticate to the AWS services, the workload identity's `Status` fields can be queried to view the log which helps in debugging.
 ```bash
 kubectl get workloadidentity demo-identity -o yaml
 ```
