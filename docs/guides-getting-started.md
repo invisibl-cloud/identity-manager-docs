@@ -107,13 +107,11 @@ Now the service account `identity-manager` is ready for the Identity Manager ins
 
 ## Installing Identity Manager with Helm
 
-
 1. Copy the cluster's IAM role:
- Copy the newly created IAM role's ARN.
+Copy the newly created IAM role's ARN.
 ``` bash
 export IAM_ROLE=<IAM role>
 ```
-// TODO: installing on sa created by eksctl will have managed-by label as "eksctl" instead of "helm" and this `helm uninstall` not work and the deployment has to be manually deleted.
 2. Install Identity Manager
 ``` bash
 helm repo add invisibl https://charts.invisibl.io

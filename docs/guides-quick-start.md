@@ -27,9 +27,7 @@ This will create an EKS cluster with the specified spec.
 
 ## Installing Identity Manager with Helm
 
-
 1. Copy the cluster's IAM role: 
-
 If the cluster is newly created using `eksctl`, copy the IAM role ARN of the cluster from CloudFormation template. The IAM role can be found in the annotation of the service account `identity-manager`.
 ``` bash
 export IAM_ROLE=<IAM role>
