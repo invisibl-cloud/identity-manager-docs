@@ -36,7 +36,7 @@ nav:
   - Overview: api-overview.md
   - Quick start: guides-quick-start.md
   - API Types:
-      - WorkloadIdentity: api-workloadidentity.md
+      - WorkloadIdentity: api-workloadidentity.mkdn
   - Guides:
       - Introduction: guides-introduction.md
       - Getting started: guides-getting-started.md

@@ -19,7 +19,7 @@ Kubernetes administrators have to deal with the following:
 
 Performing the above activities manually doesn't scale for large environments that comprises of many applications. Applications also evolve rapidly requiring dynamic modification of Service Accounts to provide access to more cloud services.
 
-Identity Manager Operator automates the entire lifecyle of creating and managing pod identities. It takes care of the following:
+Identity Manager Operator automates the entire lifecycle of creating and managing pod identities. It takes care of the following:
 
 - Dynamically creating fine grained IAM Roles & Policies as requested
 - Provisioning Kubernetes Service Accounts
