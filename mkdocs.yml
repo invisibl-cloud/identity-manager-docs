@@ -23,6 +23,8 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.indexes
+  favicon: ./assets/identity-manager-blue.png
+  logo: ./assets/identity-manager-blue.png
 plugins:
   - search:
       lang: en

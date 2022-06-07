@@ -1,6 +1,6 @@
-# Introduction
+![high-level-overview](./assets/identity-manager-orange.png)
 
-![high-level-overview](./assets/overview.png)
+# Introduction
 
 Identity Manager Operator is a Kubernetes Operator that automates the creation and management of pod identities.
 
