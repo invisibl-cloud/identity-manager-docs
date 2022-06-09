@@ -1,4 +1,6 @@
-![high-level-overview](./assets/identity-manager-orange.png)
+![high-level-overview](./assets/identity-manager-orange.svg)
+<br>
+<br>
 
 # Introduction
 
@@ -24,7 +26,3 @@ Identity Manager Operator automates the entire lifecycle of creating and managin
 - Dynamically creating fine grained IAM Roles & Policies as requested
 - Provisioning Kubernetes Service Accounts
 - Attaching the Kubernetes Service Accounts to Pods
-
-## Kicked Off By
-
-[![invisibl-cloud-logo](./assets/invisibl-cloud-logo.png)](https://invisibl.io)
