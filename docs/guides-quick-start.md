@@ -36,7 +36,7 @@ export IAM_ROLE=<IAM role>
 ``` bash
 helm repo add invisibl https://charts.invisibl.io
 
-helm install invisibl/identity-manager  --set provider.aws.enabled=true --set provider.aws.arn=$IAM_ROLE --set serviceAccount.create=false --set serviceAccount.name=identity-manager --namespace=identity-manager --generate-name
+helm install my-identity-manager invisibl/identity-manager  --set provider.aws.enabled=true --set provider.aws.arn=$IAM_ROLE --set serviceAccount.create=false --set serviceAccount.name=identity-manager --namespace=identity-manager
 ```
 
 The above command will install Identity Manager in `identity-manager` namespace and `identity-manager` service account. This service account is annotated to the IAM role that has the necessary IAM permissions for the Identity Manager. This service account is dedicated to Identity Manager and any workload identity should be deployed in another service accounts.
@@ -46,19 +46,19 @@ The above command will install Identity Manager in `identity-manager` namespace 
 
 1. Get your AWS account ID
 ```bash
-ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+export ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 ```
 
 2. Get your OIDC provider
 ```bash
-OIDC_PROVIDER=$(aws eks describe-cluster --name identity-manager-test --query "cluster.identity.oidc.issuer" --region us-east-1 --output text | sed -e "s/^https:\/\///")
+export OIDC_PROVIDER=$(aws eks describe-cluster --name identity-manager-test --query "cluster.identity.oidc.issuer" --region us-east-1 --output text | sed -e "s/^https:\/\///")
 ```
 
 3. Deploy demo application
 ``` bash
-helm install invisibl/identity-manager-demo --set serviceAccount.name=sa-demo --namespace=demo --set  workloadIdentity.aws.accountId=${ACCOUNT_ID} --set workloadIdentity.aws.oidcProvider=${OIDC_PROVIDER} --create-namespace --generate-name
+helm install my-identity-manager-demo invisibl/identity-manager-demo --set serviceAccount.name=sa-demo --namespace=demo --set  workloadIdentity.aws.accountId=${ACCOUNT_ID} --set workloadIdentity.aws.oidcProvider=${OIDC_PROVIDER} --create-namespace
 ```
-The above command will deploy the workload identity and a demo application in the namespace `demo`. The identity manager will create an IAM role `identity-manager-demo-xxxx` in AWS with the inline polices mentioned in the workload identity attached to the IAM role. The identity manager will also create a service account `sa-demo` and will annotate it with the newly created role to facilitate the role binding.
+The above command will deploy the workload identity and a demo application in the namespace `demo`. The identity manager will create an IAM role `my-identity-manager-demo` in AWS with the inline polices mentioned in the workload identity attached to the IAM role. The identity manager will also create a service account `sa-demo` and will annotate it with the newly created role to facilitate the role binding.
 
 4. Verify the role binding for service account
 ``` bash
@@ -66,13 +66,13 @@ kubectl get serviceaccount sa-demo -n demo  -o=jsonpath='{.metadata.annotations}
 ```
 The response should look similar to the below one:
 ``` bash
-{"eks.amazonaws.com/role-arn":"arn:aws:iam::<Account ID>:role/identity-manager-demo-xxxx"}
+{"eks.amazonaws.com/role-arn":"arn:aws:iam::<Account ID>:role/my-identity-manager-demo"}
 ```
 5. Check the logs of the demo application pod and it should list your EC2 instances using the new role 
-`identity-manager-demo-xxxx`.
+`my-identity-manager-demo`.
 ``` bash
 time="2022-05-04T09:54:04Z" level=info msg="STS:"
-time="2022-05-04T09:54:04Z" level=info msg="STS ARN: arn:aws:sts::<Account ID>:assumed-role/identity-manager-demo-xxxx/48520678505362540620424"
+time="2022-05-04T09:54:04Z" level=info msg="STS ARN: arn:aws:sts::<Account ID>:assumed-role/my-identity-manager-demo/48520678505362540620424"
 time="2022-05-04T09:54:04Z" level=info msg="EC2:"
 time="2022-05-04T09:54:04Z" level=info msg="Reservation ID: r-0532a81dd8ed78de1"
 time="2022-05-04T09:54:04Z" level=info msg="Instance ID: i-078e85384f15b27b9"
@@ -96,23 +96,14 @@ time="2022-05-04T09:54:04Z" level=info msg="Reservations count: 8"
 time="2022-05-04T09:54:04Z" level=info msg="Instances count: 9"
 ```
 
-### Uninstalling demo application
-1. Get the name of the Identity Manager demo app's release name with the help of `helm list`
+## Uninstalling demo application with Helm
+
 ```bash
-helm list -n demo
-```
-2. Uninstall Identity Manager Demo application
-```bash
-helm uninstall <identity-manager-demo-app-release-name> -n demo
+helm uninstall my-identity-manager-demo -n demo
 ```
 
-### Uninstalling Identity Manager with Helm
+## Uninstalling Identity Manager with Helm
 
-1. Get the name of the Identity Manager's release name with the help of `helm list`
 ```bash
-helm list -n identity-manager
-```
-2. Uninstall Identity Manager
-```bash
-helm uninstall <identity-manager-release-name> -n identity-manager
+helm uninstall my-identity-manager -n identity-manager
 ```
